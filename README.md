@@ -20,9 +20,9 @@ it that mattered most, reduced to the size worth reading.
 ## Run it
 
 ```bash
-nix develop            # moon, why3, z3, cvc5, all pinned
-./scripts/prove.sh     # discharge every proof obligation
-moon -C src test       # run the tests
+nix develop                # moon, why3, z3, cvc5, all pinned
+./tools/scripts/prove.sh   # discharge every proof obligation
+moon -C src test           # run the tests
 ```
 
 Without Nix: any MoonBit toolchain with `moon prove`, plus Why3 1.7+ and at
@@ -46,7 +46,7 @@ Summary:
 ```
 
 The goal count is not a property of the code. It counts *verification
-conditions*, and the strategy in `scripts/why3-config.mjs` splits any condition
+conditions*, and the strategy in `tools/scripts/why3-config.sh` splits any condition
 that does not discharge quickly, so a machine under load reports more of them
 for the same source.
 
@@ -84,7 +84,7 @@ type, `< range -0x8000_0000 0x7fff_ffff >`, and every arithmetic operation
 carries its own no-overflow obligation.
 
 ```bash
-./scripts/prove.sh --machine-int
+./tools/scripts/prove.sh --machine-int
 ```
 
 What actually happens, on the pinned toolchain:
@@ -131,15 +131,15 @@ being claimed:
 ## Layout
 
 ```
-flake.nix                    the dev shell: moon, why3, z3, cvc5
-nix/moonbit.nix              the MoonBit toolchain as a Nix package
-nix/toolchain.lock.json      content hashes for the rolling upstream artifacts
-scripts/prove.sh             `moon prove` with a real solver strategy
-scripts/why3-config.mjs      registers every solver on PATH; escalating strategy
-scripts/nix/update-toolchain.mjs   re-pin when upstream rolls `latest`
-src/saturating/              contracts on arithmetic
-src/gap/                     a theorem about an array
-src/pitfall/                 proved and wrong
+flake.nix                              the dev shell: moon, why3, z3, cvc5
+tools/nix/moonbit.nix                  the MoonBit toolchain as a Nix package
+tools/nix/toolchain.lock.json          content hashes for the rolling artifacts
+tools/scripts/prove.sh                 `moon prove` with a real solver strategy
+tools/scripts/why3-config.sh           every solver on PATH; escalating strategy
+tools/scripts/nix/update-toolchain.sh  re-pin when upstream rolls `latest`
+src/saturating/                        contracts on arithmetic
+src/gap/                               a theorem about an array
+src/pitfall/                           proved and wrong
 ```
 
 MoonBit publishes its toolchain only under a rolling `latest` URL, so the lock
@@ -149,4 +149,8 @@ deliberately.
 
 ## Licence
 
-MIT.
+[CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/).
+
+Read it, learn from it, adapt it, write about it. Attribute it, do not use it
+commercially, and share adaptations under the same terms. If you want it for
+something commercial, ask.

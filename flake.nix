@@ -13,7 +13,7 @@
         "x86_64-linux"
         "aarch64-linux"
       ];
-      lock = builtins.fromJSON (builtins.readFile ./nix/toolchain.lock.json);
+      lock = builtins.fromJSON (builtins.readFile ./tools/nix/toolchain.lock.json);
 
       # The MoonBit toolchain is distributed as prebuilt binaries under a
       # licence nixpkgs classifies as unfree. Allowing it here, by name, keeps
@@ -29,14 +29,14 @@
     in
     {
       packages = forEach (pkgs: rec {
-        moonbit = pkgs.callPackage ./nix/moonbit.nix { inherit lock; };
+        moonbit = pkgs.callPackage ./tools/nix/moonbit.nix { inherit lock; };
         default = moonbit;
       });
 
       devShells = forEach (
         pkgs:
         let
-          moonbit = pkgs.callPackage ./nix/moonbit.nix { inherit lock; };
+          moonbit = pkgs.callPackage ./tools/nix/moonbit.nix { inherit lock; };
         in
         {
           default = pkgs.mkShell {
@@ -47,8 +47,8 @@
               pkgs.why3 # what `moon prove` translates the contracts into
               pkgs.z3 # ...and the solvers Why3 hands the goals to. Two, not
               pkgs.cvc5 # one: they close different goals, and the strategy runs
-              #           both. See scripts/why3-config.mjs.
-              pkgs.nodejs_26 # only to render that configuration
+              #           both. See tools/scripts/why3-config.sh.
+              pkgs.jq # for re-pinning the toolchain lock
             ];
 
             shellHook = ''
@@ -58,8 +58,8 @@
               echo "  z3     $(z3 --version 2>/dev/null | head -n1)"
               echo "  cvc5   $(cvc5 --version 2>/dev/null | head -n1)"
               echo
-              echo "  ./scripts/prove.sh    discharge every proof obligation"
-              echo "  moon -C src test      run the tests"
+              echo "  ./tools/scripts/prove.sh   discharge every proof obligation"
+              echo "  moon -C src test           run the tests"
               echo
 
               # `moon` keeps its mutable registry and caches under MOON_HOME;
@@ -75,8 +75,9 @@
         update-toolchain = {
           type = "app";
           program = "${pkgs.writeShellScriptBin "update-toolchain" ''
-            set -euo pipefail
-            exec ${pkgs.nodejs_26}/bin/node "$PWD/scripts/nix/update-toolchain.mjs" "$@"
+            set -eu
+            export PATH="${pkgs.lib.makeBinPath [ pkgs.jq pkgs.gnutar pkgs.gzip ]}:$PATH"
+            exec "$PWD/tools/scripts/nix/update-toolchain.sh" "$@"
           ''}/bin/update-toolchain";
         };
       });

@@ -17,7 +17,7 @@ name = "mates/formal-examples"
 
 version = "0.1.0"
 
-license = "MIT"
+license = "CC-BY-NC-SA-4.0"
 
 description = "Worked examples of formal verification in MoonBit"
 

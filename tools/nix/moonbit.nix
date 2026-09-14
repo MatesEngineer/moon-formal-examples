@@ -3,7 +3,7 @@
 # Upstream ships a single tarball of prebuilt binaries plus a separately
 # distributed standard library. Neither is in nixpkgs at a version new enough to
 # have `moon prove`, which this project depends on, so the toolchain is packaged
-# here from the official artifacts pinned in `nix/toolchain.lock.json`.
+# here from the official artifacts pinned in `tools/nix/toolchain.lock.json`.
 #
 # Two things make this less trivial than "unpack a tarball":
 #

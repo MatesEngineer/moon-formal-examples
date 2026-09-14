@@ -2,10 +2,10 @@
 # Discharge every proof obligation in the module.
 #
 # Wraps `moon prove` with a generated Why3 configuration (see
-# `why3-config.mjs`) so that every solver on PATH is registered and the time
+# `why3-config.sh`) so that every solver on PATH is registered and the time
 # limit is high enough for the quantified array invariants in `gap`.
 #
-# Usage: ./scripts/prove.sh [--machine-int] [package ...]
+# Usage: ./tools/scripts/prove.sh [--machine-int] [package ...]
 #
 # `--machine-int` swaps the proof prelude for the machine-integer one the
 # toolchain also ships, in which `Int` is a Why3 range type and every
@@ -14,7 +14,7 @@
 # is for.
 set -eu
 
-ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
+ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
 CONF="$ROOT/src/_build/verif/why3.conf"
 
 if [ "${1:-}" = "--machine-int" ]; then
@@ -24,7 +24,7 @@ if [ "${1:-}" = "--machine-int" ]; then
   echo "prelude -> $MOON_PROVE_PRELUDE_OVERRIDE"
 fi
 
-node "$ROOT/scripts/why3-config.mjs" "$CONF"
+"$ROOT/tools/scripts/why3-config.sh" "$CONF"
 
 if [ "$#" -eq 0 ]; then
   exec moon -C "$ROOT/src" prove --why3-config "$CONF"

@@ -15,7 +15,7 @@
 //     where `Int` is a Why3 range type and every arithmetic operation carries
 //     its own no-overflow obligation:
 //
-//         ./scripts/prove.sh --machine-int pitfall
+//         ./tools/scripts/prove.sh --machine-int pitfall
 //
 //     Under that prelude both functions below stop proving, which is the
 //     result to look at. Under the default one they pass.
@@ -37,7 +37,7 @@
 ///     violated as far as anything executing is concerned.
 ///
 /// So the domain restriction is real, unenforced, and, in the model it was
-/// written in, unused. `./scripts/prove.sh --machine-int` is where it starts
+/// written in, unused. `./tools/scripts/prove.sh --machine-int` is where it starts
 /// meaning something.
 ///
 /// A historical note, which is why this repository pins its toolchain: on
