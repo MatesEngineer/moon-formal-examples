@@ -5,8 +5,8 @@
 ///|
 /// The most negative `Int`, spelled the only way it can be spelled.
 ///
-/// Not a literal — that is the whole subject of `abs_unguarded` — so it is
-/// computed, which is also how a caller would come to be holding one.
+/// Not a literal, which is the whole subject of `abs_unguarded`, so it is
+/// computed. That is also how a caller would come to be holding one.
 fn int_min() -> Int {
   -2147483647 - 1
 }
@@ -15,7 +15,7 @@ fn int_min() -> Int {
 test "abs_unguarded: the pre-condition excluded nothing" {
   // The contract says `-2147483648 < x`, which was meant to keep this value
   // out. The clause never became a verification condition, so the function is
-  // defined here — and returns a negative absolute value.
+  // defined here, and returns a negative absolute value.
   let broken = @pitfall.abs_unguarded(int_min())
   assert_eq(broken, int_min())
   assert_true(broken < 0)

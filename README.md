@@ -1,7 +1,7 @@
 # moon-formal-examples
 
 Worked examples of [MoonBit](https://www.moonbitlang.com/)'s formal
-verification — `moon prove`, Why3, Z3 and cvc5 — with the whole toolchain
+verification (`moon prove`, Why3, Z3 and cvc5), with the whole toolchain
 pinned so that `nix develop` gives you the same solvers this was written
 against.
 
@@ -13,10 +13,9 @@ Three packages, in the order they are meant to be read:
 | `src/gap`         | a predicate, a loop invariant, and a theorem about an array                |
 | `src/pitfall`     | contracts that are accepted, proved, and wrong                             |
 
-They are extracted from a real use — the stroke-map completion in
-[tecack](https://github.com/ubugeeei/tecack-neo), a handwriting recogniser
-whose integer skeleton is proved and whose floating-point half is not. `gap` is
-that completion, reduced to the part worth reading.
+They are extracted from a real use: a shape-matching algorithm whose integer
+skeleton is proved and whose floating-point half is not. `gap` is the part of
+it that mattered most, reduced to the size worth reading.
 
 ## Run it
 
@@ -48,7 +47,7 @@ Summary:
 
 The goal count is not a property of the code. It counts *verification
 conditions*, and the strategy in `scripts/why3-config.mjs` splits any condition
-that does not discharge quickly — so a machine under load reports more of them
+that does not discharge quickly, so a machine under load reports more of them
 for the same source.
 
 ## The one thing to know first
@@ -61,10 +60,10 @@ in contracted function body
 ```
 
 For a numeric algorithm that sounds like the end of the conversation, and it is
-not. The move is to split each computation in two — the arithmetic that decides
-an **index**, and the arithmetic that decides a **value** — put the first in a
-package with contracts, and leave the second with no index expression of its
-own to get wrong. `clamp_div` in `src/gap` is the seam: it takes an integer
+not. The move is to split each computation in two. The arithmetic that decides
+an **index** goes in a package with contracts; the arithmetic that decides a
+**value** stays outside, with no index expression of its own left to get
+wrong. `clamp_div` in `src/gap` is the seam: it takes an integer
 chosen by floating-point code it knows nothing about, and clamps rather than
 trusts it. A numeric solver returning nonsense still cannot produce a malformed
 array.
@@ -76,11 +75,11 @@ That is the whole technique. Everything else is detail.
 The toolchain ships two proof preludes, and which one you are in decides what
 your contracts mean.
 
-**Default** (`lib/prelude_proof`) — `Int` is a mathematical integer. `type t =
+**Default** (`lib/prelude_proof`). `Int` is a mathematical integer: `type t =
 int`, `in_bounds` is `true`, and overflow does not exist. Proofs are fast and
 say nothing about the machine.
 
-**Machine integers** (`lib/prelude_proof_machine_int`) — `Int` is a Why3 range
+**Machine integers** (`lib/prelude_proof_machine_int`). `Int` is a Why3 range
 type, `< range -0x8000_0000 0x7fff_ffff >`, and every arithmetic operation
 carries its own no-overflow obligation.
 
@@ -96,7 +95,7 @@ What actually happens, on the pinned toolchain:
 | `saturating` | proved  | 19 proved, **3 timeout**    |
 | `pitfall`    | proved  | **both functions fail**     |
 
-`pitfall` failing is the point — that is what those two functions are for, and
+`pitfall` failing is the point. That is what those two functions are for, and
 under `--machine-int` the failure is reported against the *subtraction* rather
 than against the post-condition, which is the more useful place to be told.
 
@@ -120,7 +119,7 @@ being claimed:
 
 - **A proof is about the contract, not about the intent.** `moon prove` shows
   the code satisfies what you wrote down. Whether what you wrote down is what
-  you meant is not a formal question — which is why `gap` also exports
+  you meant is not a formal question, which is why `gap` also exports
   `is_total`, the same property as a runtime check, sharing nothing with the
   proof but the predicate.
 - **A pre-condition is an obligation on callers, not a runtime check.** Nothing

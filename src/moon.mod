@@ -5,7 +5,7 @@
 //   saturating  contracts on plain integer arithmetic, and the machine-range
 //               clauses that make them true of the machine and not only of
 //               the mathematics
-//   gap         a predicate, a loop invariant, and a theorem about an array —
+//   gap         a predicate, a loop invariant, and a theorem about an array:
 //               the shape a real proof takes
 //   pitfall     contracts that are accepted, proved, and wrong. Each one is a
 //               failure mode of the verifier itself, pinned by a test.

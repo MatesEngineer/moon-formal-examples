@@ -18,7 +18,7 @@
       # The MoonBit toolchain is distributed as prebuilt binaries under a
       # licence nixpkgs classifies as unfree. Allowing it here, by name, keeps
       # `nix develop` working without asking every reader to set
-      # `NIXPKGS_ALLOW_UNFREE` — and without blanket-allowing anything else.
+      # `NIXPKGS_ALLOW_UNFREE`, and without blanket-allowing anything else.
       pkgsFor =
         system:
         import nixpkgs {

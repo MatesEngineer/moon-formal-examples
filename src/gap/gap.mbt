@@ -1,7 +1,7 @@
 // Completion of a partial map, and the proof that it completes.
 //
-// The setting, stripped to its bones. Something upstream — in tecack, a greedy
-// pass over floating-point stroke distances followed by a local search —
+// The setting, stripped to its bones. Something upstream (in the original, a
+// greedy pass over floating-point distances followed by a local search)
 // produces an array in which *some* entries are decided and the rest are `-1`.
 // Completion fills the rest in. Everything downstream then does
 //
@@ -19,9 +19,9 @@
 /// A fresh map of `n` undecided entries.
 ///
 /// The contract is longer than the body, and stated anyway: this is where the
-/// sentinel enters the module. `-1` is not a valid index and cannot become one
-/// — every function here either preserves an entry or overwrites it with a
-/// value copied from another entry — which is what makes `assigned` a
+/// sentinel enters the module. `-1` is not a valid index and cannot become
+/// one, because every function here either preserves an entry or overwrites it
+/// with a value copied from another entry. That is what makes `assigned` a
 /// statement about values, and the whole chain expressible.
 pub fn make_unassigned(
   n : Int,
@@ -45,7 +45,7 @@ pub fn make_unassigned(
 /// *run*. That is not redundancy. A proof establishes that the code satisfies
 /// the contract and says nothing about whether the contract says what was
 /// meant; running this on real data checks the other half, and it shares
-/// nothing with the proof but the predicate — so a mistake would have to be
+/// nothing with the proof but the predicate, so a mistake would have to be
 /// made twice, in two languages, to escape both.
 pub fn is_total(
   xs : FixedArray[Int],
@@ -89,9 +89,10 @@ pub fn is_total(
 ///|
 /// Clamp a division point into `[start, stop)`.
 ///
-/// The join between the two halves of a real algorithm. In tecack the argument
-/// arrives from the floating-point solver, which the verifier cannot see into
-/// at all — so it is not trusted, it is clamped. A solver returning nonsense
+/// The join between the two halves of a real algorithm. In the original the
+/// argument arrives from the floating-point solver, which the verifier cannot
+/// see into at all, so it is not trusted, it is clamped. A solver returning
+/// nonsense
 /// can then still not produce a malformed map, and the proof below does not
 /// depend on the numeric code being right, only on it returning an integer.
 pub fn clamp_div(
@@ -122,9 +123,9 @@ pub fn clamp_div(
 /// The theorem, in English: *given an array whose first entry is decided, the
 /// result has the same length and no undecided entry anywhere.*
 ///
-/// The real thing in tecack is this plus a choice of where to cut each run —
-/// `clamp_div` above is where that choice arrives — and the shape of the proof
-/// is the same. Note what the contract does *not* say: nothing about which
+/// The real thing is this plus a choice of where to cut each run, and
+/// `clamp_div` above is where that choice arrives. The shape of the proof is
+/// the same. Note what the contract does *not* say: nothing about which
 /// value each entry receives, and nothing about the run being the closest
 /// match. Those are the optimisation problem, and they are neither proved nor
 /// provable. What is proved is that the sentinel is gone.
@@ -139,14 +140,14 @@ pub fn fill_forward(
     #| The output is allocated locally and written in place rather than the
     #| input being mutated, and that is not a style choice. MoonBit has no
     #| `old(...)`, so a function that mutates its argument cannot state a frame
-    #| condition — "and I changed nothing else" — and a caller therefore loses
+    #| condition ("and I changed nothing else"), and a caller therefore loses
     #| every fact it knew about the array the moment it makes the call. Proof
     #| by composition stops working. Within one body the verifier tracks each
     #| write exactly, so the rule is: keep every mutation inside the function
     #| that reasons about it.
     #|
     #| `assigned(xs, 0)` is the whole pre-condition and it is load-bearing in
-    #| exactly one place — establishing the invariant at `i = 1`. Without it
+    #| exactly one place: establishing the invariant at `i = 1`. Without it
     #| the first entry could be `-1`, and every later entry copying leftwards
     #| would copy it.
   ),

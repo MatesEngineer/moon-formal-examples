@@ -1,6 +1,6 @@
 // What the proofs cover is the domain `[INT_FLOOR, INT_MAX]`. What they cannot
 // cover is `Int::min_value`, one below it, which no contract in the module can
-// even mention — so its behaviour is recorded here by hand instead.
+// even mention, so its behaviour is recorded here by hand instead.
 
 ///|
 /// Values at and around every boundary the arithmetic can meet.

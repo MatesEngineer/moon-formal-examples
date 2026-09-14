@@ -1,7 +1,7 @@
 // `a + b`, clamped rather than wrapped.
 //
 // The verifier reasons about *mathematical* integers. To it `a + b` is simply
-// `a + b`, always correct, never overflowing — which is precisely the wrong
+// `a + b`, always correct, never overflowing, which is precisely the wrong
 // model for the bug this module exists to prevent. So the machine range is
 // stated explicitly, in both directions:
 //
@@ -27,7 +27,7 @@ pub const INT_MAX : Int = 2147483647
 /// contract language rather than about the arithmetic: `-2147483648` cannot be
 /// written as a literal. It is the negation of `2147483648`, which is not an
 /// `Int`. A `proof_require` containing it does not fail to compile and does not
-/// warn — it produces *no verification condition at all*. The clause vanishes,
+/// warn. It produces *no verification condition at all*: the clause vanishes,
 /// `moon prove` reports the function proved, and nothing about it was ever
 /// asked.
 ///
@@ -84,7 +84,7 @@ pub fn add(
 /// `Int::min_value` is excluded by the pre-condition rather than handled,
 /// because its absolute value is not an `Int` and there is no answer to give.
 /// Every caller in a real program holds a value that came from somewhere with
-/// a narrower range — a coordinate, a length, an index — and satisfies it
+/// a narrower range (a coordinate, a length, an index) and satisfies it
 /// without thinking about it.
 pub fn iabs(
   x : Int,

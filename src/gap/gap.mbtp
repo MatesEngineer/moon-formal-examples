@@ -1,9 +1,9 @@
 // The logic-side vocabulary. Nothing here is executable.
 //
 // Predicates exist so that a contract reads as a sentence rather than as a
-// wall of quantifiers, and — less obviously — so that every obligation in the
-// package funnels through the same few shapes, which keeps the SMT queries
-// alike and therefore fast.
+// wall of quantifiers. Less obviously, it also means every obligation in the
+// package funnels through the same few shapes, so there is one place to fix
+// when a definition turns out to be wrong.
 
 ///|
 /// `i` is a legal index into a container of `n` elements.
@@ -35,9 +35,9 @@ pub predicate total(xs : FixedArray[Int]) {
 ///
 /// The loop invariant that carries `fill_forward` from "the first entry is
 /// decided" to "the whole array is total". It is deliberately weaker than the
-/// obvious invariant — it says nothing about *which* value each entry holds —
-/// because an invariant tracking exact values generates far larger
-/// verification conditions, and the post-condition does not need them.
+/// obvious invariant, in that it says nothing about *which* value each entry
+/// holds, because an invariant tracking exact values generates far larger
+/// verification conditions and the post-condition does not need them.
 pub predicate prefix_total(xs : FixedArray[Int], k : Int) {
   ∀ i : Int, ((0 <= i) && (i < k)) → assigned(xs, i)
 }

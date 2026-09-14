@@ -1,7 +1,7 @@
 // The proof says completion leaves no sentinel behind. These run it.
 //
 // `is_total` is the same property as an executable check, and it shares
-// nothing with the proof but the predicate's name — so a mistake would have to
+// nothing with the proof but the predicate's name, so a mistake would have to
 // be made twice, in two languages, to escape both.
 
 ///|

@@ -29,22 +29,22 @@
 ///
 ///   * under the default prelude the clause is inert. `Int` is unbounded
 ///     there, so `0 <= |x|` holds for every `x` and the hypothesis carries no
-///     weight — deleting it changes nothing, which is a good way to discover
+///     weight. Deleting it changes nothing, which is a good way to discover
 ///     that a pre-condition you believed in is decorative;
 ///   * a `proof_require` is a *proof* obligation on callers, not a runtime
 ///     check. Nothing stops the value being passed, and the test alongside
 ///     this file passes it: the result is negative, and no contract was
 ///     violated as far as anything executing is concerned.
 ///
-/// So the domain restriction is real, unenforced, and — in the model it was
-/// written in — unused. `./scripts/prove.sh --machine-int` is where it starts
+/// So the domain restriction is real, unenforced, and, in the model it was
+/// written in, unused. `./scripts/prove.sh --machine-int` is where it starts
 /// meaning something.
 ///
 /// A historical note, which is why this repository pins its toolchain: on
 /// toolchains before roughly 0.1.20260904, writing `-2147483648` in a contract
 /// produced *no verification condition at all* rather than an inert one. `Int`
 /// cannot hold `2147483648`, so the literal is a negation of a value that does
-/// not exist, and the clause silently vanished from the generated Why3 — the
+/// not exist, and the clause silently vanished from the generated Why3. The
 /// function then appeared proved with a hypothesis nobody had checked. On the
 /// pinned toolchain the clause does survive; `grep requires` in
 /// `src/_build/verif/pitfall/*.mlw` after a run shows it. Behaviour like this
@@ -100,8 +100,8 @@ pub fn abs_diff_unsound(
     #| conclusion is false of the compiled program.
     #|
     #| Under the machine-integer prelude the subtraction carries a no-overflow
-    #| obligation which nothing in the contract discharges, and it fails —
-    #| naming the operation rather than the post-condition, which is the more
+    #| obligation which nothing in the contract discharges, and it fails,
+    #| naming the operation rather than the post-condition. That is the more
     #| useful place to be told.
   ),
 } {

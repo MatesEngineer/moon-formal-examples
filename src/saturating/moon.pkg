@@ -2,8 +2,8 @@
 //
 // The smallest thing worth proving, and the one that shows the whole shape of
 // a MoonBit contract: a pre-condition naming the domain, post-conditions
-// naming the result, and — the part that is easy to leave out and fatal to
-// leave out — the machine range, written down by hand.
+// naming the result, and the machine range written down by hand. That last
+// part is the one that is easy to leave out and fatal to leave out.
 options(
   "proof-enabled": true,
 )

@@ -1,4 +1,4 @@
-// Contracts that are accepted, proved — and wrong.
+// Contracts that are accepted, proved, and wrong.
 //
 // Every function in this package passes `moon prove`. Every one of them is
 // also broken, and the tests alongside them say how. They are here because
