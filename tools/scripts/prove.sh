@@ -9,9 +9,12 @@
 #
 # `--machine-int` swaps the proof prelude for the machine-integer one the
 # toolchain also ships, in which `Int` is a Why3 range type and every
-# arithmetic operation carries a no-overflow obligation. `saturating` and `gap`
-# prove under both; `pitfall` proves only under the default, which is what it
-# is for.
+# arithmetic operation carries a no-overflow obligation.
+#
+# Measured on the pinned toolchain, that changes the result: `gap` still
+# proves, `saturating` leaves 3 goals of `add` at the time limit, and
+# `pitfall` leaves both goals of `abs_diff_unsound` there. Nothing comes back
+# invalid in either mode, so these are time limits and not counterexamples.
 set -eu
 
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)

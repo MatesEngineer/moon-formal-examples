@@ -1,68 +1,41 @@
-// Two functions. Both are accepted, both are proved, and both are wrong.
-//
-// They are wrong in the same way, and it is the way that matters most when
-// verifying a numeric algorithm: the default proof model gives `Int` the
-// semantics of a *mathematical* integer, so overflow is not merely unchecked,
-// it is unrepresentable. A contract stated in that model cannot mention the
-// machine, and a proof discharged in it is a proof about a program that
-// resembles the one being compiled.
-//
-// Two ways out, and this package exists to demonstrate both:
-//
-//   * write the machine range into the contract by hand, which is what
-//     `src/saturating` does;
-//   * or prove against the machine-integer prelude the toolchain also ships,
-//     where `Int` is a Why3 range type and every arithmetic operation carries
-//     its own no-overflow obligation:
-//
-//         ./tools/scripts/prove.sh --machine-int pitfall
-//
-//     Under that prelude both functions below stop proving, which is the
-//     result to look at. Under the default one they pass.
-
 ///|
-/// `|x|`, with a pre-condition that the default model cannot use.
+/// `|x|`, restricted to the values whose negation is representable.
 ///
-/// The intent is to exclude the one value whose negation is not an `Int`. Two
-/// things about that intent go wrong at once, and neither produces a
-/// diagnostic:
+/// The contract is honest and the implementation honours it: `Int::MIN_VALUE`
+/// is the one value whose absolute value is not an `Int`, the pre-condition
+/// excludes exactly that value, and everything else is fine. `moon prove`
+/// discharges this under both proof models.
 ///
-///   * under the default prelude the clause is inert. `Int` is unbounded
-///     there, so `0 <= |x|` holds for every `x` and the hypothesis carries no
-///     weight. Deleting it changes nothing, which is a good way to discover
-///     that a pre-condition you believed in is decorative;
-///   * a `proof_require` is a *proof* obligation on callers, not a runtime
-///     check. Nothing stops the value being passed, and the test alongside
-///     this file passes it: the result is negative, and no contract was
-///     violated as far as anything executing is concerned.
+/// The pitfall is what the pre-condition *is*. `proof_require` is an
+/// obligation on callers, discharged when the caller is itself verified. It is
+/// not a runtime check. Nothing prevents a caller passing `MIN_VALUE`, nothing
+/// reports it when they do, and the function then returns a negative absolute
+/// value with no contract violated as far as anything executing is concerned.
+/// The test alongside this file does exactly that.
 ///
-/// So the domain restriction is real, unenforced, and, in the model it was
-/// written in, unused. `./tools/scripts/prove.sh --machine-int` is where it starts
-/// meaning something.
+/// So a chain of proofs is only as good as its ends. Where verified code meets
+/// unverified code, the pre-condition has to be re-established by something
+/// that runs: a check, a type, or a value that cannot be out of range in the
+/// first place.
 ///
-/// A historical note, which is why this repository pins its toolchain: on
-/// toolchains before roughly 0.1.20260904, writing `-2147483648` in a contract
-/// produced *no verification condition at all* rather than an inert one. `Int`
-/// cannot hold `2147483648`, so the literal is a negation of a value that does
-/// not exist, and the clause silently vanished from the generated Why3. The
-/// function then appeared proved with a hypothesis nobody had checked. On the
-/// pinned toolchain the clause does survive; `grep requires` in
-/// `src/_build/verif/pitfall/*.mlw` after a run shows it. Behaviour like this
-/// moves between versions, which is the argument for pinning it rather than
-/// for remembering it.
+/// One more thing worth knowing, because the two models disagree about it.
+/// Under the default prelude this pre-condition does no work at all: `Int` is
+/// unbounded there, so `0 <= |x|` holds for every `x` and deleting the clause
+/// changes nothing. Under `--machine-int` the negation carries a no-overflow
+/// obligation of its own, and the clause is exactly what discharges it. Same
+/// text, two different theorems, and only one of them needed the hypothesis.
 pub fn abs_unguarded(
   x : Int,
 ) -> Int where {
   proof_require: -2147483648 < x,
   proof_ensure: result => 0 <= result,
   proof_reasoning: (
-    #| Under the default prelude: two branches, and over ℤ negation of a
+    #| Under the default prelude: two branches, and over ℤ the negation of a
     #| negative is positive. The hypothesis is not used.
     #|
-    #| Under the machine-integer prelude the goal is not the post-condition but
-    #| the negation itself, which has a no-overflow obligation of its own, and
-    #| `-2147483648 < x` is exactly strong enough to discharge it. Same text,
-    #| different theorem.
+    #| Under the machine-integer prelude the interesting goal is not the
+    #| post-condition but the negation's own range obligation, and
+    #| `-2147483648 < x` is exactly strong enough to close it.
   ),
 } {
   if x < 0 {
@@ -75,20 +48,27 @@ pub fn abs_unguarded(
 ///|
 /// `|a - b|`.
 ///
-/// `proof_ensure: 0 <= result` is proved, and on the machine the result can be
-/// negative. Both statements are true, about different things: over the
-/// integers `2147483647 - (-2147483647)` is `4294967294`, which is duly
-/// non-negative; in an `Int` it wraps to `-2`.
+/// `proof_ensure: 0 <= result` is proved under the default prelude, and on the
+/// machine the result can be negative. Both statements are true, about
+/// different things: over the integers `2147483647 - (-2147483647)` is
+/// `4294967294`, which is duly non-negative; in an `Int` it wraps to `-2`.
 ///
 /// This is the sharper of the two, because nothing about the contract looks
-/// incomplete. There is no missing hypothesis to notice, no literal out of
-/// range, no clause that fails to appear in the generated Why3. The proof is
-/// correct and the conclusion does not hold of the code, and the only signal
-/// is that the model was the wrong one.
+/// incomplete. There is no missing hypothesis to notice and no clause absent
+/// from the generated Why3. The proof is correct and its conclusion does not
+/// hold of the compiled program, and the only thing wrong is that the model
+/// was the wrong one.
 ///
-/// A unit test found it on the first run, which is the pairing this whole
-/// repository is about: the proof covers the case analysis a test cannot
-/// enumerate, and the test covers the machine the proof cannot see.
+/// A unit test found it on the first run, which is the pairing this repository
+/// is about: the proof covers the case analysis a test cannot enumerate, and
+/// the test covers the machine the proof cannot see.
+///
+/// Under `--machine-int` this function stops being provable. Note the shape of
+/// that result: on the pinned toolchain its goals come back **timeout**, not
+/// invalid. The solver ran out of time; it did not produce a counterexample.
+/// A timeout says only that this configuration did not close the goal, and the
+/// reason to believe the function is actually broken is the test below, not
+/// the failed proof.
 pub fn abs_diff_unsound(
   a : Int,
   b : Int,
@@ -100,9 +80,8 @@ pub fn abs_diff_unsound(
     #| conclusion is false of the compiled program.
     #|
     #| Under the machine-integer prelude the subtraction carries a no-overflow
-    #| obligation which nothing in the contract discharges, and it fails,
-    #| naming the operation rather than the post-condition. That is the more
-    #| useful place to be told.
+    #| obligation which nothing in the contract discharges. Fixing it means
+    #| bounding both operands, which is what `src/saturating` does.
   ),
 } {
   if a < b {

@@ -22,10 +22,21 @@ pub predicate assigned(xs : FixedArray[Int], i : Int) {
 }
 
 ///|
-/// Every entry of `xs` has been decided.
+/// Every entry of `xs` has been decided, in the sense that no entry is the
+/// sentinel.
 ///
-/// The property the caller relies on to index without checking, and the one
-/// `fill_forward` is required to establish.
+/// Read the definition rather than the name. This says `xs[i] != -1` for every
+/// `i`, and *nothing else*: not that the entries are non-negative, not that
+/// they are below some length, not that they are indices at all. An array of
+/// `-2`s is total.
+///
+/// So `total` is the property `fill_forward` establishes, and it is not on its
+/// own the property a caller needs in order to index another array with these
+/// values. That needs a second predicate, over the range of the entries, and
+/// it needs to be threaded through everything that writes to the array. It is
+/// left out here to keep the example one theorem long, which is exactly the
+/// kind of gap worth noticing in a real proof: the sentinel being gone and the
+/// value being usable are two claims, and only one of them is made below.
 pub predicate total(xs : FixedArray[Int]) {
   ∀ i : Int, in_bounds(i, xs.length()) → assigned(xs, i)
 }

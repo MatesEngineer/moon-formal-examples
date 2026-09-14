@@ -1,13 +1,30 @@
-// Contracts that are accepted, proved, and wrong.
+// Two contracts that pass `moon prove`, and two different reasons that is not
+// the same as the code being right.
 //
-// Every function in this package passes `moon prove`. Every one of them is
-// also broken, and the tests alongside them say how. They are here because
-// each is a property of the verifier rather than of the program, none is in
-// the manual, and each cost real time to find.
+//   abs_unguarded     proves under both proof models. Its pre-condition is
+//                     satisfiable and the implementation honours it. What it
+//                     shows is that a `proof_require` is an obligation on
+//                     *callers* and not a runtime check: nothing stops a
+//                     caller passing a value outside the domain, nothing
+//                     reports it, and the result is then whatever the code
+//                     happens to do.
 //
-// The common shape: the solver reasons about *mathematical* integers, and the
-// machine does not. A proof is a proof about the model it was stated in, and
-// the gap between that model and the hardware has to be closed by hand.
+//   abs_diff_unsound  proves under the default model and is false on the
+//                     machine. The default prelude gives `Int` the semantics
+//                     of a mathematical integer, so a subtraction that
+//                     overflows at runtime is, to the solver, simply a
+//                     subtraction.
+//
+// The second is the one that argues for either writing the machine range into
+// the contract by hand, as `src/saturating` does, or proving against the
+// machine-integer prelude:
+//
+//     ./tools/scripts/prove.sh --machine-int pitfall
+//
+// Measured on the pinned toolchain, that leaves `abs_unguarded` proved and
+// `abs_diff_unsound` unproved: its two goals hit the time limit rather than
+// coming back invalid, which is a weaker result than a counterexample and is
+// reported here as what it is.
 options(
   "proof-enabled": true,
 )

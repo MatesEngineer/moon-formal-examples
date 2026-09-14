@@ -23,15 +23,16 @@ pub const INT_MAX : Int = 2147483647
 ///|
 /// The most negative value this module works with.
 ///
-/// Not `Int::min_value`, which is one lower, and the reason is about the
-/// contract language rather than about the arithmetic: `-2147483648` cannot be
-/// written as a literal. It is the negation of `2147483648`, which is not an
-/// `Int`. A `proof_require` containing it does not fail to compile and does not
-/// warn. It produces *no verification condition at all*: the clause vanishes,
-/// `moon prove` reports the function proved, and nothing about it was ever
-/// asked.
+/// One above `Int::MIN_VALUE`, deliberately, so the domain is symmetric. The
+/// reason is `iabs` below: `MIN_VALUE`'s negation is not an `Int`, so `iabs`
+/// has to exclude it, and a module whose functions agree on one domain
+/// composes without a case analysis at every call.
 ///
-/// See `src/pitfall` for that failure demonstrated in isolation.
+/// So the range this module proves things about is **not** the full machine
+/// range. It is the machine range minus one value, and a caller holding
+/// `MIN_VALUE` is outside the domain of everything here. That is a real
+/// restriction and it is stated rather than hidden: see `src/pitfall`, where
+/// a caller ignores exactly such a pre-condition and nothing stops them.
 pub const INT_FLOOR : Int = -2147483647
 
 ///|
@@ -81,7 +82,7 @@ pub fn add(
 ///|
 /// `|x|`.
 ///
-/// `Int::min_value` is excluded by the pre-condition rather than handled,
+/// `Int::MIN_VALUE` is excluded by the pre-condition rather than handled,
 /// because its absolute value is not an `Int` and there is no answer to give.
 /// Every caller in a real program holds a value that came from somewhere with
 /// a narrower range (a coordinate, a length, an index) and satisfies it
@@ -99,7 +100,7 @@ pub fn iabs(
     #| Two branches matching the last two clauses. The bound `result <= INT_MAX`
     #| needs the pre-condition and nothing else: `-x` for `x >= INT_FLOOR` is at
     #| most `INT_MAX`, which is exactly why `INT_FLOOR` is `-INT_MAX` and not
-    #| `Int::min_value`.
+    #| `Int::MIN_VALUE`.
   ),
 } {
   if x < 0 {

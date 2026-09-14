@@ -20,10 +20,13 @@ it that mattered most, reduced to the size worth reading.
 ## Run it
 
 ```bash
-nix develop                # moon, why3, z3, cvc5, all pinned
-./tools/scripts/prove.sh   # discharge every proof obligation
-moon -C src test           # run the tests
+nix develop --command ./tools/scripts/prove.sh   # discharge every obligation
+nix develop --command moon -C src test           # run the tests
 ```
+
+Or `nix develop` once for an interactive shell and run them from inside it.
+(`nix develop && ...` does not work: `nix develop` *is* the shell, so the
+right-hand side would run after you exit it.)
 
 Without Nix: any MoonBit toolchain with `moon prove`, plus Why3 1.7+ and at
 least one of z3, cvc5, alt-ergo on `PATH`.
@@ -46,9 +49,13 @@ Summary:
 ```
 
 The goal count is not a property of the code. It counts *verification
-conditions*, and the strategy in `tools/scripts/why3-config.sh` splits any condition
-that does not discharge quickly, so a machine under load reports more of them
-for the same source.
+conditions*, and the strategy in `tools/scripts/why3-config.sh` splits any
+condition that does not discharge quickly, so a machine under load reports more
+of them for the same source.
+
+Everything measured in this README was run with the toolchain this repository
+pins: **moon 0.1.20260904** (`moonc v0.10.12+1634b282e`), **Why3 1.8.2**,
+**Z3 4.16.0**, **cvc5 1.3.4**, on aarch64-darwin, 120s per goal.
 
 ## The one thing to know first
 
@@ -84,33 +91,48 @@ type, `< range -0x8000_0000 0x7fff_ffff >`, and every arithmetic operation
 carries its own no-overflow obligation.
 
 ```bash
-./tools/scripts/prove.sh --machine-int
+nix develop --command ./tools/scripts/prove.sh --machine-int
 ```
 
-What actually happens, on the pinned toolchain:
+`--machine-int` is this repository's own flag, handled by `prove.sh`: it sets
+`MOON_PROVE_PRELUDE_OVERRIDE` to the machine-integer prelude in the toolchain.
 
-| Package      | default | `--machine-int`             |
-| ------------ | ------- | --------------------------- |
-| `gap`        | proved  | proved                      |
-| `saturating` | proved  | 19 proved, **3 timeout**    |
-| `pitfall`    | proved  | **both functions fail**     |
+What actually happens, measured on the pinned toolchain below, at the default
+120s per goal:
 
-`pitfall` failing is the point. That is what those two functions are for, and
-under `--machine-int` the failure is reported against the *subtraction* rather
-than against the post-condition, which is the more useful place to be told.
+| Package      | default          | `--machine-int`                             |
+| ------------ | ---------------- | ------------------------------------------- |
+| `gap`        | 4 valid          | 4 valid                                     |
+| `saturating` | 2 valid          | 19 valid, 3 timeout, all in `add`           |
+| `pitfall`    | 2 valid          | 2 valid, 2 timeout, all in `abs_diff_unsound` |
 
-`saturating` not closing is the more interesting row. The proofs are not
-unsound and the guards do short-circuit correctly in the generated Why3 (`if …
-then … else false`); the goals simply do not discharge inside the time limit,
-because every arithmetic operation now drags its own no-overflow obligation
-through a function that already has five post-conditions. **The machine-integer
-prelude is not a free switch.** It buys a real class of bug and it costs proof
-time, and on this example the trade is visibly not free.
+Three things are worth reading carefully in that table.
 
-Which is the argument for what `src/saturating` does under the default prelude:
-put the machine range into the contract by hand. It is verbose, and it closes
-in seconds. Read the two alongside each other and the verbosity turns into a
-choice rather than a ritual.
+**Nothing comes back `invalid`.** Every failure is a *timeout*: the solver ran
+out of time, which is not the same as reporting the goal false. Why3
+distinguishes these and so should any claim made from them. That
+`abs_diff_unsound` is genuinely broken is established by the test next to it,
+not by the failed proof.
+
+**Only `add` and `abs_diff_unsound` stop closing.** `iabs` and
+`abs_unguarded` prove under both models. `abs_unguarded` in particular is
+*correct*: its pre-condition excludes the one value that would break it, and
+the machine-integer model is precisely where that pre-condition starts doing
+work. What it demonstrates is not a wrong proof but an unenforced one.
+
+**Why `add` times out is not established.** The guards do short-circuit
+correctly in the generated Why3 (`if … then … else false`), so that particular
+suspicion is ruled out. The plausible remaining explanation is the extra range
+obligation on every arithmetic operation inside a function that already has
+five post-conditions, but a timeout on its own does not prove that, and no
+attempt was made here to close the goals with auxiliary lemmas or a longer
+limit.
+
+So: the machine-integer prelude buys a real class of bug and costs proof time,
+and on this example the trade is visibly not free. That is the argument for
+what `src/saturating` does under the default prelude, which is to put the
+machine range into the contract by hand. It is verbose, and it closes in
+seconds.
 
 ## What a proof is not
 
@@ -127,6 +149,15 @@ being claimed:
   `abs_unguarded` in `src/pitfall`.
 - **A proof discharged in the wrong model is worth nothing.** See
   `abs_diff_unsound` in `src/pitfall`: proved, and false.
+- **A proof covers the inputs the pre-conditions admit, not all inputs.**
+  "For every input" always means "for every input satisfying the contract".
+- **A predicate proves what it says, not what its name suggests.** `gap`'s
+  `total` says no entry equals `-1`. It does not say the entries are valid
+  indices into anything, and an array of `-2`s satisfies it. Making the
+  downstream read safe needs a second property about the range of the values,
+  which this example deliberately does not carry.
+- **A failed proof is usually a timeout, and a timeout is not a
+  counterexample.** Nothing in this repository ever comes back `invalid`.
 
 ## Layout
 
