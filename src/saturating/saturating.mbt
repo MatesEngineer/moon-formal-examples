@@ -13,8 +13,12 @@
 //     result is the true sum" are different claims and only the first one
 //     holds unconditionally.
 //
-// Both are trivial for callers to satisfy: every caller is holding a machine
-// integer already.
+// Note what the caller's obligation actually is. The range below is not the
+// full `Int` range: it excludes `Int::MIN_VALUE`, for the reason `INT_FLOOR`
+// gives. So "the argument is an `Int`" does not discharge the pre-condition on
+// its own; the caller also has to know that value cannot arrive. In practice
+// every caller here holds a length or a coordinate and satisfies it without
+// thinking, but it is a real obligation and not a formality.
 
 ///|
 /// The largest `Int`, and the ceiling this module saturates at.

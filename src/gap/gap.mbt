@@ -8,8 +8,12 @@
 //     let target = map[i]        // trusted to be a real index
 //     let (a, b) = span(target)  // trusted to be in range
 //
-// with no check. If completion ever leaves a `-1` behind, that is an
-// out-of-range read: a trap under WebAssembly, `undefined` under JavaScript.
+// with no check of its own. If completion leaves a `-1` behind, reading it out
+// of `map` is not yet the problem; using it as an index into `span` is. Under
+// WebAssembly that call traps and a `WebAssembly.RuntimeError` reaches the
+// host, which is a call that returns no answer rather than a wrong one. In the
+// JavaScript original the corresponding read is `undefined`, and the damage
+// happens further downstream.
 //
 // "It happens not to leave one behind" is exactly the kind of claim a solver
 // is good at and a test is bad at, because a test can only report that the

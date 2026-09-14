@@ -8,8 +8,17 @@
 # some goals are closed by only one of them.
 #
 # So this registers every supported solver on PATH and builds a strategy that
-# escalates: a fast pass to sweep up the easy goals, then `split_vc` to break
-# the survivors apart, then a long pass with every solver in parallel.
+# escalates: a fast pass over each solver in turn to sweep up the easy goals,
+# then `compute_specified` and `split_vc` to break the survivors apart, then a
+# second pass over each solver with a long time limit.
+#
+# Note that this is sequential, not parallel. In Why3's strategy language a
+# `c <prover> <time> <mem>` line stops the strategy when that prover succeeds
+# and falls through to the next line when it does not, so consecutive `c`
+# lines are alternatives tried in order. `running_provers_max` bounds how many
+# prover processes Why3 may run at once across goals; it does not turn these
+# lines into a parallel race on one goal. The time limit below is therefore
+# per prover call, not per goal.
 #
 # Usage: ./scripts/why3-config.sh <output path>
 set -eu

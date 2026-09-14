@@ -2,8 +2,9 @@
 # Discharge every proof obligation in the module.
 #
 # Wraps `moon prove` with a generated Why3 configuration (see
-# `why3-config.sh`) so that every solver on PATH is registered and the time
-# limit is high enough for the quantified array invariants in `gap`.
+# `why3-config.sh`) so that every solver on PATH is registered and tried in
+# turn, with a time limit high enough for the quantified array invariants in
+# `gap`. The limit is per prover call, not per goal.
 #
 # Usage: ./tools/scripts/prove.sh [--machine-int] [package ...]
 #

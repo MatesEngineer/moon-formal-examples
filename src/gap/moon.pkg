@@ -2,8 +2,14 @@
 //
 // This is the example the README builds towards, and a miniature of the one
 // property that made verification worth doing in the original: a partial
-// assignment is completed and then indexed *without a bounds check*, so a
-// surviving sentinel is not a wrong answer but a WebAssembly trap.
+// assignment is completed and then used to index another array *without an
+// application-level check*, so a surviving sentinel is not a wrong answer. It
+// is a call that traps instead of returning one.
+//
+// Note the scope. What is proved here is that no entry is the sentinel. That
+// the entries are *valid indices* is a second property, over their range, and
+// this package does not carry it. Both are needed before the downstream read
+// is actually safe; only the first is demonstrated.
 //
 // Everything here is integer. That is not incidental: MoonBit's verifier has
 // no model of `Double`, and a function carrying a contract may not contain

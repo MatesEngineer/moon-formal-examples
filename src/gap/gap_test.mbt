@@ -41,6 +41,21 @@ test "is_total decides the property it is named after" {
 }
 
 ///|
+test "the pre-condition is load-bearing, and unenforced" {
+  // `fill_forward` requires `assigned(xs, 0)`. Drop that hypothesis and the
+  // theorem is not merely harder to prove, it is false: this single-element
+  // array is a counterexample. `out[0] = xs[0]` copies the sentinel, the loop
+  // body never runs, and the result still contains `-1`.
+  //
+  // Nothing stops the call. A `proof_require` is discharged by callers, not
+  // checked at runtime, so this compiles, runs, and quietly returns a value
+  // the contract says is impossible.
+  let violated = @gap.fill_forward([-1])
+  assert_eq(violated, [-1])
+  assert_false(@gap.is_total(violated))
+}
+
+///|
 test "clamp_div lands inside the half-open range whatever it is handed" {
   for div in [-2147483647, -5, 0, 3, 4, 5, 2147483647] {
     let r = @gap.clamp_div(div, 2, 5)

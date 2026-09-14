@@ -55,7 +55,7 @@ of them for the same source.
 
 Everything measured in this README was run with the toolchain this repository
 pins: **moon 0.1.20260904** (`moonc v0.10.12+1634b282e`), **Why3 1.8.2**,
-**Z3 4.16.0**, **cvc5 1.3.4**, on aarch64-darwin, 120s per goal.
+**Z3 4.16.0**, **cvc5 1.3.4**, on aarch64-darwin, 120s per prover call.
 
 ## The one thing to know first
 
@@ -98,7 +98,8 @@ nix develop --command ./tools/scripts/prove.sh --machine-int
 `MOON_PROVE_PRELUDE_OVERRIDE` to the machine-integer prelude in the toolchain.
 
 What actually happens, measured on the pinned toolchain below, at the default
-120s per goal:
+120s per prover call in the long pass (the strategy tries each solver in turn,
+so a goal may spend more than that before it is given up on):
 
 | Package      | default          | `--machine-int`                             |
 | ------------ | ---------------- | ------------------------------------------- |
