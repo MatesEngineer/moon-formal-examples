@@ -88,7 +88,9 @@ done
 
 if [ -z "$found" ]; then
   echo "no SMT solver found on PATH. \`nix develop\` provides z3 and cvc5;" >&2
-  echo "outside Nix, install at least one of z3, cvc5, alt-ergo." >&2
+  echo "outside Nix, install at least one of z3, cvc5, alt-ergo. Why3 itself" >&2
+  echo "is not needed separately: the MoonBit toolchain ships its data and" >&2
+  echo "why3server, and moon prove drives those." >&2
   exit 1
 fi
 
