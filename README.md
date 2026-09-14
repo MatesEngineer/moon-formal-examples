@@ -2,8 +2,8 @@
 
 Worked examples of [MoonBit](https://www.moonbitlang.com/)'s formal
 verification (`moon prove`, Why3, Z3 and cvc5), with the whole toolchain
-pinned so that `nix develop` gives you the same solvers this was written
-against.
+pinned so that `nix develop` gives you the same compiler and solvers this was
+written against.
 
 Three packages, in the order they are meant to be read:
 
@@ -28,8 +28,16 @@ Or `nix develop` once for an interactive shell and run them from inside it.
 (`nix develop && ...` does not work: `nix develop` *is* the shell, so the
 right-hand side would run after you exit it.)
 
-Without Nix: any MoonBit toolchain with `moon prove`, plus Why3 1.7+ and at
-least one of z3, cvc5, alt-ergo on `PATH`.
+Without Nix: any MoonBit toolchain with `moon prove`, plus at least one of
+z3, cvc5 or alt-ergo on `PATH`.
+
+Note what is *not* in that list. **Why3 does not have to be installed
+separately.** The MoonBit toolchain ships Why3's data and drivers under
+`share/why3` and its `why3server` under `lib/why3`, and `moon prove` drives
+those directly; this repository proves clean with no `why3` binary on `PATH` at
+all. Under Nix that is worth more than tidiness, because nixpkgs' `why3` is
+built from OCaml and pulls an OCaml toolchain into a closure that otherwise has
+none.
 
 Expected output:
 
@@ -163,21 +171,23 @@ being claimed:
 ## Layout
 
 ```
-flake.nix                              the dev shell: moon, why3, z3, cvc5
-tools/nix/moonbit.nix                  the MoonBit toolchain as a Nix package
-tools/nix/toolchain.lock.json          content hashes for the rolling artifacts
-tools/scripts/prove.sh                 `moon prove` with a real solver strategy
-tools/scripts/why3-config.sh           every solver on PATH; escalating strategy
-tools/scripts/nix/update-toolchain.sh  re-pin when upstream rolls `latest`
-src/saturating/                        contracts on arithmetic
-src/gap/                               a theorem about an array
-src/pitfall/                           proved and wrong
+flake.nix                     the dev shell: the pinned moon, plus z3 and cvc5
+tools/scripts/prove.sh        `moon prove` with a real solver strategy
+tools/scripts/why3-config.sh  every solver on PATH; escalating strategy
+src/saturating/               contracts on arithmetic
+src/gap/                      a theorem about an array
+src/pitfall/                  proved, and not what the name suggests
 ```
 
-MoonBit publishes its toolchain only under a rolling `latest` URL, so the lock
-pins content hashes. When upstream rolls, the build fails loudly instead of
-silently changing compiler; `nix run .#update-toolchain` moves the pin
-deliberately.
+The toolchain comes from
+[moonbit-overlay](https://github.com/moonbit-community/moonbit-overlay), pinned
+to the exact version every measurement here was taken with
+(`v0.10.12+1634b282e+94521db`). That is worth a sentence, because upstream
+publishes its toolchain only under a rolling `latest` URL: a lock against that
+URL stops resolving once upstream moves and the old artifact leaves every
+cache. The overlay mirrors each version to its own GitHub release, so the URL
+this flake resolves is immutable. Bumping the toolchain means changing one
+string in `flake.nix` and re-running the measurements.
 
 ## Licence
 
