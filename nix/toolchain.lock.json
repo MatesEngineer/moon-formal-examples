@@ -1,0 +1,37 @@
+{
+  "$comment": [
+    "Pinned toolchain artifacts, with content hashes.",
+    "",
+    "MoonBit publishes its toolchain only under a rolling `latest` URL — there",
+    "are no immutable per-version download paths — so reproducibility is",
+    "achieved the way Nix always achieves it: by pinning the *content*. When",
+    "upstream rolls `latest`, the hashes below stop matching and the build fails",
+    "loudly instead of silently changing compiler. Re-pin with:",
+    "",
+    "    nix run .#update-toolchain",
+    "",
+    "The `version` fields are informational; the hashes are what is enforced."
+  ],
+  "moonbit": {
+    "version": "0.1.20260904",
+    "moonc": "v0.10.12+1634b282e",
+    "date": "2026-09-04",
+    "baseUrl": "https://cli.moonbitlang.com/binaries/latest",
+    "coreUrl": "https://cli.moonbitlang.com/cores/core-latest.zip",
+    "coreHash": "sha256-93DR8xT0qog4noVMfnaBSlNKLYTpP+M+FzelFmFNMn8=",
+    "platforms": {
+      "aarch64-darwin": {
+        "asset": "moonbit-darwin-aarch64.tar.gz",
+        "hash": "sha256-bdrQ1TboXSLiPWlWchHp28ZTT6k2bO5dJ2o3J1kX4H4="
+      },
+      "x86_64-linux": {
+        "asset": "moonbit-linux-x86_64.tar.gz",
+        "hash": "sha256-m72n00L6OWVKZcI4BeX/WjkVoms2YnolZaaxqZ0JngE="
+      },
+      "aarch64-linux": {
+        "asset": "moonbit-linux-aarch64.tar.gz",
+        "hash": "sha256-dFuQJ7YB5xOkf3TCafap+jcYqMJwvImigkwX17x9840="
+      }
+    }
+  }
+}

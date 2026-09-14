@@ -1,0 +1,13 @@
+// Contracts that are accepted, proved — and wrong.
+//
+// Every function in this package passes `moon prove`. Every one of them is
+// also broken, and the tests alongside them say how. They are here because
+// each is a property of the verifier rather than of the program, none is in
+// the manual, and each cost real time to find.
+//
+// The common shape: the solver reasons about *mathematical* integers, and the
+// machine does not. A proof is a proof about the model it was stated in, and
+// the gap between that model and the hardware has to be closed by hand.
+options(
+  "proof-enabled": true,
+)

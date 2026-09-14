@@ -1,0 +1,16 @@
+// A theorem about an array: after completion, no entry is undecided.
+//
+// This is the example the README builds towards, and a miniature of the one
+// property that made verification worth doing in tecack — where a partial
+// stroke map is completed and then indexed *without a bounds check*, so a
+// surviving sentinel is not a wrong answer but a WebAssembly trap.
+//
+// Everything here is integer. That is not incidental: MoonBit's verifier has
+// no model of `Double`, and a function carrying a contract may not contain
+// floating-point operations at all. The split this package demonstrates — put
+// the index arithmetic where the solver can see it, leave the arithmetic that
+// decides *values* outside — is what makes the technique applicable to a
+// numeric algorithm in the first place.
+options(
+  "proof-enabled": true,
+)

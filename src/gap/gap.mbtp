@@ -1,0 +1,43 @@
+// The logic-side vocabulary. Nothing here is executable.
+//
+// Predicates exist so that a contract reads as a sentence rather than as a
+// wall of quantifiers, and — less obviously — so that every obligation in the
+// package funnels through the same few shapes, which keeps the SMT queries
+// alike and therefore fast.
+
+///|
+/// `i` is a legal index into a container of `n` elements.
+pub predicate in_bounds(i : Int, n : Int) {
+  (0 <= i) && (i < n)
+}
+
+///|
+/// Entry `i` of `xs` has been decided.
+///
+/// `-1` is the sentinel, and the reason `assigned` can be a predicate about
+/// the *value* rather than about whether a slot was ever written: a Why3 array
+/// is total, so there is no notion of an uninitialised element to talk about.
+pub predicate assigned(xs : FixedArray[Int], i : Int) {
+  xs[i] != -1
+}
+
+///|
+/// Every entry of `xs` has been decided.
+///
+/// The property the caller relies on to index without checking, and the one
+/// `fill_forward` is required to establish.
+pub predicate total(xs : FixedArray[Int]) {
+  ∀ i : Int, in_bounds(i, xs.length()) → assigned(xs, i)
+}
+
+///|
+/// Every entry in the prefix `[0, k)` has been decided.
+///
+/// The loop invariant that carries `fill_forward` from "the first entry is
+/// decided" to "the whole array is total". It is deliberately weaker than the
+/// obvious invariant — it says nothing about *which* value each entry holds —
+/// because an invariant tracking exact values generates far larger
+/// verification conditions, and the post-condition does not need them.
+pub predicate prefix_total(xs : FixedArray[Int], k : Int) {
+  ∀ i : Int, ((0 <= i) && (i < k)) → assigned(xs, i)
+}
